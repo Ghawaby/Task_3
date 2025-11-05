@@ -23,29 +23,20 @@ export default function AllPerks() {
 
   // ==================== SIDE EFFECTS WITH useEffect HOOK ====================
 
- /*
- TODO: HOOKS TO IMPLEMENT
- * useEffect Hook #1: Initial Data Loading
- * useEffect Hook #2: Auto-search on Input Change
-
-*/
-
-  
+  // Hook #1: Initial data loading when component mounts - loads all perks
   useEffect(() => {
-    // Extract all merchant names from perks array
-    const merchants = perks
-      .map(perk => perk.merchant) // Get merchant from each perk
-      .filter(merchant => merchant && merchant.trim()) // Remove empty/null values
-    
-    // Create array of unique merchants using Set
-    // Set automatically removes duplicates, then we convert back to array
-    const unique = [...new Set(merchants)]
-    
-    // Update state with unique merchants
-    setUniqueMerchants(unique)
-    
-    // This effect depends on [perks], so it re-runs whenever perks changes
-  }, [perks]) // Dependency: re-run when perks array changes
+    loadAllPerks()
+  }, []) // Empty dependency - runs only once on mount
+
+  // Hook #2: Auto-search / filter whenever inputs change
+  // This performs immediate filtering as the user types or selects a merchant
+  useEffect(() => {
+    // Skip if this is the initial render (handled by Hook #1)
+    if (searchQuery === '' && merchantFilter === '') {
+      return
+    }
+    loadAllPerks()
+  }, [searchQuery, merchantFilter])
 
   
   async function loadAllPerks() {
@@ -68,6 +59,13 @@ export default function AllPerks() {
       
       // Update perks state with response data
       setPerks(res.data.perks)
+
+      // Extract and set unique merchants from the fetched perks
+      const merchants = (res.data.perks || [])
+        .map(perk => perk.merchant)
+        .filter(Boolean)
+
+      setUniqueMerchants([...new Set(merchants)])
       
     } catch (err) {
       // Handle errors (network failure, server error, etc.)
@@ -136,7 +134,8 @@ export default function AllPerks() {
                 type="text"
                 className="input"
                 placeholder="Enter perk name..."
-                
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
               />
               <p className="text-xs text-zinc-500 mt-1">
                 Auto-searches as you type, or press Enter / click Search
@@ -151,7 +150,8 @@ export default function AllPerks() {
               </label>
               <select
                 className="input"
-                
+                value={merchantFilter}
+                onChange={e => setMerchantFilter(e.target.value)}
               >
                 <option value="">All Merchants</option>
                 
@@ -217,7 +217,7 @@ export default function AllPerks() {
           
           <Link
             key={perk._id}
-           
+            to={`/perks/${perk._id}/view`}
             className="card hover:shadow-lg transition-shadow cursor-pointer"
           >
             {/* Perk Title */}

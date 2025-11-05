@@ -35,7 +35,7 @@ export default function App() {
       </nav>
 
       <Routes>
-        <Route path="/" element={<Navigate to="/perks" />} />
+        <Route path="/" element={<Navigate to="/all-perks" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/perks" element={<Perks />} />
